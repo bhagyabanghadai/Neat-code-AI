@@ -1,25 +1,31 @@
 name: Daily Commit
+
 on:
   schedule:
     - cron: '0 0 * * *' # Runs at 00:00 UTC every day
   push:
     branches:
       - main
+
+permissions:
+  contents: write
+
 jobs:
   daily-commit:
     runs-on: ubuntu-latest
+
     steps:
     - name: Checkout repository
       uses: actions/checkout@v2
-      with:
-        ref: daily-commits # Checkout the daily-commits branch
+
     - name: Create or update file
       run: |
         echo "Daily commit on $(date)" > daily-commit.txt
+
     - name: Commit and push changes
       run: |
         git config --global user.name 'github-actions[bot]'
         git config --global user.email 'github-actions[bot]@users.noreply.github.com'
         git add daily-commit.txt
-        git commit -m "Daily commit on $(date)"
-        git push origin daily-commits
+        git commit -m "Daily commit on $(date)" || echo "No changes to commit"
+        git push https://x-access-token:${{ secrets.ACTIONS_PAT }}@github.com/${{ github.repository }}.git
