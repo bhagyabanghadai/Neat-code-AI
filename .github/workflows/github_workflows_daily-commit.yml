@@ -1,11 +1,10 @@
-name: Daily Commit
+name: Random Daily Commit
 
 on:
   schedule:
-    - cron: '0 0 * * *' # Runs at 00:00 UTC every day
-  push:
-    branches:
-      - main
+    - cron: '30 5 * * *'  # Runs at 05:30 UTC (Modify randomly)
+    - cron: '15 14 * * *' # Runs at 14:15 UTC on some days
+  workflow_dispatch:  # Allows manual triggering if needed
 
 permissions:
   contents: write
@@ -18,14 +17,27 @@ jobs:
     - name: Checkout repository
       uses: actions/checkout@v2
 
-    - name: Create or update file
+    - name: Generate Randomness
       run: |
-        echo "Daily commit on $(date)" > daily-commit.txt
+        RANDOM_NUM=$(( RANDOM % 10 ))  # Random number between 0-9
+        if [[ $RANDOM_NUM -lt 3 ]]; then
+          echo "Skipping commit today to look human."
+          exit 0
+        fi
+
+    - name: Modify file slightly
+      run: |
+        FILE="random-commit.txt"
+        DATE=$(date "+%Y-%m-%d %H:%M:%S")
+        echo "Commit made on $DATE with a small change." >> $FILE
+        git add $FILE
 
     - name: Commit and push changes
       run: |
-        git config --global user.name 'github-actions[bot]'
-        git config --global user.email 'github-actions[bot]@users.noreply.github.com'
-        git add daily-commit.txt
-        git commit -m "Daily commit on $(date)" || echo "No changes to commit"
+        COMMIT_MESSAGES=("Updated some minor stuff" "Refactoring in progress" "Small tweak made" "Fixing minor issue" "Just improving things")
+        RANDOM_MSG=${COMMIT_MESSAGES[$RANDOM % ${#COMMIT_MESSAGES[@]}]}
+
+        git config --global user.name "Bhagyaban Kadra"
+        git config --global user.email "bhagyaban@users.noreply.github.com"
+        git commit -m "$RANDOM_MSG" || echo "No changes to commit"
         git push https://x-access-token:${{ secrets.ACTIONS_PAT }}@github.com/${{ github.repository }}.git
