@@ -2,8 +2,7 @@ name: Random Daily Commit
 
 on:
   schedule:
-    - cron: '30 5 * * *'  # Runs at 05:30 UTC (Modify randomly)
-    - cron: '15 14 * * *' # Runs at 14:15 UTC on some days
+    - cron: '0 9 * * *'  # Runs every day at 9:00 AM UTC
   workflow_dispatch:  # 👈 Allows manual trigger from GitHub Actions
 
 permissions:
@@ -16,6 +15,12 @@ jobs:
     steps:
     - name: Checkout repository
       uses: actions/checkout@v3
+
+    - name: Random Delay Before Execution
+      run: |
+        RANDOM_DELAY=$(( RANDOM % 50400 ))  # Random delay between 0 - 14 hours (0 to 50400 seconds)
+        echo "Sleeping for $RANDOM_DELAY seconds to randomize execution time..."
+        sleep $RANDOM_DELAY
 
     - name: Generate Randomness (Skip Some Days)
       run: |
